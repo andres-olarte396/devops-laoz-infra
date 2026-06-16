@@ -1,0 +1,24 @@
+# Excluir node_modules de todos los proyectos (se instalan dentro del contenedor)
+**/node_modules
+**/npm-debug.log
+**/.env
+
+# Excluir archivos de desarrollo
+**/.git
+**/.gitignore
+**/dist
+**/build
+**/.nyc_output
+**/coverage
+
+# Excluir apps que no forman parte del build de cada servicio
+# (el docker-compose apunta al subdirectorio correcto vía dockerfile:)
+dev-laoz-WaveArtCSS
+dev-laoz-html-project-base
+
+# Excluir artefactos de tests
+**/*.test.js
+**/*.spec.js
+**/tests
+**/test
+**/jest.config.js

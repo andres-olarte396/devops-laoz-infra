@@ -1,0 +1,288 @@
+networks:
+  laoz-net:
+    driver: bridge
+
+volumes:
+  mongo-data:
+
+services:
+
+  # ── Base de datos ─────────────────────────────────────────────────────────
+
+  mongo:
+    image: mongo:7-jammy
+    container_name: mongo
+    networks: [laoz-net]
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ── Infraestructura base ──────────────────────────────────────────────────
+  # api-secrets arranca primero: el resto depende de él para cargar secretos
+
+  api-secrets:
+    build:
+      context: ..
+      dockerfile: dev-laoz-api-secrets/Dockerfile
+    container_name: api-secrets
+    networks: [laoz-net]
+    env_file: .env
+    environment:
+      - PORT=3501
+      - SERVICE_NAME=api-secrets
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- --no-check-certificate https://localhost:3501/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  api-insights:
+    build:
+      context: ..
+      dockerfile: dev-laoz-api-insights/Dockerfile
+    container_name: api-insights
+    networks: [laoz-net]
+    env_file: .env
+    environment:
+      - PORT=3600
+      - SERVICE_NAME=api-insights
+    depends_on:
+      mongo:
+        condition: service_healthy
+      api-secrets:
+        condition: service_healthy
+
+  # ── Core Auth ─────────────────────────────────────────────────────────────
+
+  authentication-api:
+    build:
+      context: ..
+      dockerfile: dev-laoz-authentication-api/Dockerfile
+    container_name: authentication-api
+    networks: [laoz-net]
+    env_file: .env
+    environment:
+      - LOCAL_PORT=4000
+      - SERVICE_NAME=authentication-api
+    depends_on:
+      mongo:
+        condition: service_healthy
+      api-secrets:
+        condition: service_healthy
+      api-insights:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4000/api/auth/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  authorization-api:
+    build:
+      context: ..
+      dockerfile: dev-laoz-authorization-api/Dockerfile
+    container_name: authorization-api
+    networks: [laoz-net]
+    env_file: .env
+    environment:
+      - PORT=5000
+      - SERVICE_NAME=authorization-api
+    depends_on:
+      mongo:
+        condition: service_healthy
+      api-secrets:
+        condition: service_healthy
+      api-insights:
+        condition: service_started
+      api-roles:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:5000/api/authorization/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  api-roles:
+    build:
+      context: ..
+      dockerfile: dev-laoz-api-roles/Dockerfile
+    container_name: api-roles
+    networks: [laoz-net]
+    env_file: .env
+    environment:
+      - PORT=5002
+      - SERVICE_NAME=api-roles
+    depends_on:
+      mongo:
+        condition: service_healthy
+      api-secrets:
+        condition: service_healthy
+      api-insights:
+        condition: service_started
+
+  # ── APIs de negocio ───────────────────────────────────────────────────────
+
+  api-authorization:
+    build:
+      context: ..
+      dockerfile: dev-laoz-api-authorization/Dockerfile
+    container_name: api-authorization
+    networks: [laoz-net]
+    env_file: .env
+    environment:
+      - PORT=5001
+      - SERVICE_NAME=api-authorization
+    depends_on:
+      mongo:
+        condition: service_healthy
+      api-secrets:
+        condition: service_healthy
+      api-insights:
+        condition: service_started
+
+  user-api:
+    build:
+      context: ..
+      dockerfile: dev-laoz-api-user/Dockerfile
+    container_name: user-api
+    networks: [laoz-net]
+    env_file: .env
+    environment:
+      - LOCAL_PORT=6000
+      - SERVICE_NAME=user-api
+    depends_on:
+      mongo:
+        condition: service_healthy
+      api-secrets:
+        condition: service_healthy
+      api-insights:
+        condition: service_started
+
+  api-files:
+    build:
+      context: ..
+      dockerfile: dev-laoz-api-files/Dockerfile
+    container_name: api-files
+    networks: [laoz-net]
+    env_file: .env
+    environment:
+      - PORT=3700
+      - SERVICE_NAME=api-files
+    depends_on:
+      api-secrets:
+        condition: service_healthy
+      api-insights:
+        condition: service_started
+
+  api-manager:
+    build:
+      context: ..
+      dockerfile: dev-laoz-api-manager/Dockerfile
+    container_name: api-manager
+    networks: [laoz-net]
+    env_file: .env
+    environment:
+      - PORT=3800
+      - SERVICE_NAME=api-manager
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      api-secrets:
+        condition: service_healthy
+      api-insights:
+        condition: service_started
+
+  billing-api:
+    build:
+      context: ..
+      dockerfile: dev-laoz-billing-api/Dockerfile
+    container_name: billing-api
+    networks: [laoz-net]
+    env_file: .env
+    environment:
+      - PORT=3004
+      - SERVICE_NAME=billing-api
+    depends_on:
+      api-secrets:
+        condition: service_healthy
+      api-insights:
+        condition: service_started
+
+  # ── Tools ─────────────────────────────────────────────────────────────────
+
+  docs-automator:
+    build: ../dev-laoz-docs-automator
+    container_name: docs-automator
+    networks: [laoz-net]
+    environment:
+      - PORT=7000
+      - SERVICE_NAME=docs-automator
+    ports:
+      - "7000:7000"
+
+  # ── Gateway (único punto de entrada para las APIs) ────────────────────────
+
+  api-gateway:
+    build:
+      context: ..
+      dockerfile: dev-laoz-api-gateway/Dockerfile
+    container_name: api-gateway
+    networks: [laoz-net]
+    env_file: .env
+    environment:
+      - LOCAL_PORT=3002
+      - SERVICE_NAME=api-gateway
+    ports:
+      - "9000:3002"
+    depends_on:
+      authentication-api:
+        condition: service_healthy
+      authorization-api:
+        condition: service_healthy
+      api-insights:
+        condition: service_started
+      user-api:
+        condition: service_started
+      api-files:
+        condition: service_started
+      api-manager:
+        condition: service_started
+      billing-api:
+        condition: service_started
+
+  # ── Frontends (build context propio, no usan @dev-laoz/core) ─────────────
+
+  auth-frontend:
+    build:
+      context: ../dev-laoz-auth-frontend
+      args:
+        - VITE_USER_API_URL=http://localhost:9000/api/user
+        - VITE_AUTH_API_URL=http://localhost:9000/api/auth
+    container_name: auth-frontend
+    networks: [laoz-net]
+    ports:
+      - "9001:80"
+    depends_on:
+      - api-gateway
+
+  portal:
+    build:
+      context: ../dev-laoz-portal
+      args:
+        - VITE_FILES_SERVICE_URL=http://localhost:9000/api/files
+        - VITE_MARKDOWN_SERVICE_URL=http://localhost:7000
+    container_name: portal
+    networks: [laoz-net]
+    ports:
+      - "80:80"
+    depends_on:
+      - api-gateway
+      - docs-automator

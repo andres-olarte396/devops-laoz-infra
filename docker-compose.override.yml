@@ -1,0 +1,66 @@
+# Overrides para desarrollo local: hot-reload + puertos internos expuestos
+
+services:
+
+  api-secrets:
+    volumes:
+      - ../dev-laoz-api-secrets/src:/usr/src/app/src:ro
+
+  api-insights:
+    volumes:
+      - ../dev-laoz-api-insights/src:/usr/src/app/src:ro
+    ports:
+      - "3600:3600"
+
+  authentication-api:
+    volumes:
+      - ../dev-laoz-authentication-api/src:/usr/src/app/src:ro
+    command: npm run dev
+    ports:
+      - "4000:4000"
+
+  authorization-api:
+    volumes:
+      - ../dev-laoz-authorization-api/src:/usr/src/app/src:ro
+    command: npm run dev
+    ports:
+      - "5000:5000"
+
+  api-authorization:
+    volumes:
+      - ../dev-laoz-api-authorization/src:/usr/src/app/src:ro
+    ports:
+      - "5001:5001"
+
+  user-api:
+    volumes:
+      - ../dev-laoz-api-user/src:/usr/src/app/src:ro
+    command: npm run dev
+    ports:
+      - "6000:6000"
+
+  api-files:
+    volumes:
+      - ../dev-laoz-api-files/src:/usr/src/app/src:ro
+    ports:
+      - "3700:3700"
+
+  api-manager:
+    volumes:
+      - ../dev-laoz-api-manager/src:/usr/src/app/src:ro
+    ports:
+      - "3800:3800"
+
+  billing-api:
+    volumes:
+      - ../dev-laoz-billing-api/src:/usr/src/app/src:ro
+    command: npm run dev
+    ports:
+      - "3004:3004"
+
+  api-gateway:
+    volumes:
+      - ../dev-laoz-api-gateway/src:/usr/src/app/src:ro
+    command: npm run dev
+    ports:
+      - "3002:3002"
