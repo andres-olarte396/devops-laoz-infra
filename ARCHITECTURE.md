@@ -92,13 +92,13 @@ flowchart TD
 
 Responsable exclusivo de **emitir tokens JWT**.
 
-| Endpoint | Método | Auth | Descripción |
-| --- | --- | --- | --- |
-| `/api/auth/login` | POST | No | Login → devuelve `accessToken` (1h) + `refreshToken` (7d) |
-| `/api/auth/refresh` | POST | No | Renueva access token con refresh token |
-| `/api/auth/logout` | POST | Sí | Invalida sesión en BD |
-| `/api/auth/verify` | GET | Sí | Verifica validez del token |
-| `/api/auth/health` | GET | No | Healthcheck |
+| Endpoint            | Método | Auth | Descripción                                               |
+| ------------------- | ------ | ---- | --------------------------------------------------------- |
+| `/api/auth/login`   | POST   | No   | Login → devuelve `accessToken` (1h) + `refreshToken` (7d) |
+| `/api/auth/refresh` | POST   | No   | Renueva access token con refresh token                    |
+| `/api/auth/logout`  | POST   | Sí   | Invalida sesión en BD                                     |
+| `/api/auth/verify`  | GET    | Sí   | Verifica validez del token                                |
+| `/api/auth/health`  | GET    | No   | Healthcheck                                               |
 
 **Flujo de login:**
 
@@ -129,10 +129,10 @@ El JWT **no contiene roles ni permisos** — solo `{ userId, sessionToken }`. Lo
 
 Valida tokens y **verifica permisos RBAC** consultando Roles API.
 
-| Endpoint | Método | Auth | Descripción |
-| --- | --- | --- | --- |
-| `/api/authorization/validate` | POST | Sí (Bearer) | Valida token y opcionalmente verifica permiso |
-| `/api/authorization/health` | GET | No | Healthcheck |
+| Endpoint                      | Método | Auth        | Descripción                                   |
+| ----------------------------- | ------ | ----------- | --------------------------------------------- |
+| `/api/authorization/validate` | POST   | Sí (Bearer) | Valida token y opcionalmente verifica permiso |
+| `/api/authorization/health`   | GET    | No          | Healthcheck                                   |
 
 **Request body:**
 
@@ -184,20 +184,20 @@ Fuente de verdad para **roles y sus permisos**. Los permisos siguen el formato `
 
 **Roles predeterminados (del sistema):**
 
-| Rol | Permisos |
-| --- | --- |
-| `admin` | Todo (`users:*`, `roles:*`, `files:*`, `secrets:*`, `insights:*`, `billing:*`) |
-| `editor` | `files:read/write/delete`, `insights:read` |
-| `viewer` | `files:read`, `insights:read` |
-| `user` | `files:read` |
+| Rol      | Permisos                                                                       |
+| -------- | ------------------------------------------------------------------------------ |
+| `admin`  | Todo (`users:*`, `roles:*`, `files:*`, `secrets:*`, `insights:*`, `billing:*`) |
+| `editor` | `files:read/write/delete`, `insights:read`                                     |
+| `viewer` | `files:read`, `insights:read`                                                  |
+| `user`   | `files:read`                                                                   |
 
-| Endpoint | Método | Auth | Descripción |
-| --- | --- | --- | --- |
-| `/api/roles` | GET | Sí | Lista todos los roles |
-| `/api/roles` | POST | Sí | Crea rol personalizado |
-| `/api/roles/:id` | GET/PUT/DELETE | Sí | Gestión por ID |
-| `/api/roles/name/:name` | GET | Sí | Obtiene rol por nombre |
-| `/api/roles/check` | POST | No | Verifica si roles[] tienen un permiso (uso interno) |
+| Endpoint                | Método         | Auth | Descripción                                         |
+| ----------------------- | -------------- | ---- | --------------------------------------------------- |
+| `/api/roles`            | GET            | Sí   | Lista todos los roles                               |
+| `/api/roles`            | POST           | Sí   | Crea rol personalizado                              |
+| `/api/roles/:id`        | GET/PUT/DELETE | Sí   | Gestión por ID                                      |
+| `/api/roles/name/:name` | GET            | Sí   | Obtiene rol por nombre                              |
+| `/api/roles/check`      | POST           | No   | Verifica si roles[] tienen un permiso (uso interno) |
 
 ---
 
@@ -207,13 +207,13 @@ Fuente de verdad para **roles y sus permisos**. Los permisos siguen el formato `
 
 CRUD completo de usuarios. **Registro es público** (POST `/api/user`). El resto requiere autenticación.
 
-| Endpoint | Método | Auth | Descripción |
-| --- | --- | --- | --- |
-| `/api/user` | GET | Sí | Lista usuarios |
-| `/api/user` | POST | No | Registra nuevo usuario |
-| `/api/user/:id` | GET | Sí | Obtiene usuario por ID |
-| `/api/user/:id` | PUT | Sí | Actualiza usuario |
-| `/api/user/:id` | DELETE | Sí | Elimina usuario |
+| Endpoint        | Método | Auth | Descripción            |
+| --------------- | ------ | ---- | ---------------------- |
+| `/api/user`     | GET    | Sí   | Lista usuarios         |
+| `/api/user`     | POST   | No   | Registra nuevo usuario |
+| `/api/user/:id` | GET    | Sí   | Obtiene usuario por ID |
+| `/api/user/:id` | PUT    | Sí   | Actualiza usuario      |
+| `/api/user/:id` | DELETE | Sí   | Elimina usuario        |
 
 **Modelo User:**
 
@@ -242,11 +242,11 @@ Para asignar roles RBAC a un usuario, usar `PUT /api/user/:id` con `{ "roles": [
 
 Almacena y sirve **secretos cifrados** con AES-256-CBC. Solo accesible desde IPs internas de la red Docker (`laoz-net`).
 
-| Endpoint | Método | Restricción | Descripción |
-| --- | --- | --- | --- |
-| `/api/secrets` | POST | IP interna | Crea/actualiza un secreto |
-| `/api/secrets/:app` | POST | IP interna | Obtiene secreto por app y key |
-| `/api/health` | GET | Ninguna | Healthcheck |
+| Endpoint            | Método | Restricción | Descripción                   |
+| ------------------- | ------ | ----------- | ----------------------------- |
+| `/api/secrets`      | POST   | IP interna  | Crea/actualiza un secreto     |
+| `/api/secrets/:app` | POST   | IP interna  | Obtiene secreto por app y key |
+| `/api/health`       | GET    | Ninguna     | Healthcheck                   |
 
 **Cómo lo usan los demás servicios:**
 
@@ -280,21 +280,21 @@ Centraliza **logs, auditoría y métricas HTTP** de todos los servicios. Los dat
 
 **Ingesta (sin auth — fire-and-forget):**
 
-| Endpoint | Método | Descripción |
-| --- | --- | --- |
-| `/api/insights/log` | POST | Log del sistema (info/warn/error/debug) |
-| `/api/insights/audit` | POST | Evento de auditoría (actor, acción, resultado) |
-| `/api/insights/transaction` | POST | Transacción HTTP (path, método, status, duración) |
+| Endpoint                    | Método | Descripción                                       |
+| --------------------------- | ------ | ------------------------------------------------- |
+| `/api/insights/log`         | POST   | Log del sistema (info/warn/error/debug)           |
+| `/api/insights/audit`       | POST   | Evento de auditoría (actor, acción, resultado)    |
+| `/api/insights/transaction` | POST   | Transacción HTTP (path, método, status, duración) |
 
 **Consulta (requiere auth):**
 
-| Endpoint | Método | Filtros disponibles |
-| --- | --- | --- |
-| `/api/insights/logs` | GET | `service`, `level`, `from`, `to`, `limit`, `skip` |
-| `/api/insights/errors` | GET | `service`, `from`, `to`, `limit` |
-| `/api/insights/audit` | GET | `actor`, `action`, `outcome`, `from`, `to` |
-| `/api/insights/transactions` | GET | `service`, `method`, `statusCode`, `minDuration` |
-| `/api/insights/stream` | GET (SSE) | Stream en tiempo real — requiere auth |
+| Endpoint                     | Método    | Filtros disponibles                               |
+| ---------------------------- | --------- | ------------------------------------------------- |
+| `/api/insights/logs`         | GET       | `service`, `level`, `from`, `to`, `limit`, `skip` |
+| `/api/insights/errors`       | GET       | `service`, `from`, `to`, `limit`                  |
+| `/api/insights/audit`        | GET       | `actor`, `action`, `outcome`, `from`, `to`        |
+| `/api/insights/transactions` | GET       | `service`, `method`, `statusCode`, `minDuration`  |
+| `/api/insights/stream`       | GET (SSE) | Stream en tiempo real — requiere auth             |
 
 **Pipeline de observabilidad:**
 
@@ -335,11 +335,11 @@ flowchart LR
 **Cómo lo usan los demás servicios:**
 
 ```js
-const { logger } = require('@dev-laoz/core');
-logger.info('mensaje', { metadata });
-logger.error('error', err.stack, { contexto });
-logger.audit('system', 'USER_CREATED', userId, 'SUCCESS', {});
-logger.transaction('/api/files', 'POST', 201, 45);
+const { logger } = require("@dev-laoz/core");
+logger.info("mensaje", { metadata });
+logger.error("error", err.stack, { contexto });
+logger.audit("system", "USER_CREATED", userId, "SUCCESS", {});
+logger.transaction("/api/files", "POST", 201, 45);
 ```
 
 Las llamadas son fire-and-forget (no bloquean el servicio si Insights falla).
@@ -352,15 +352,15 @@ Las llamadas son fire-and-forget (no bloquean el servicio si Insights falla).
 
 Gestión de archivos con **versionado** y soporte multi-almacenamiento (Local / Network / Cloud).
 
-| Endpoint | Método | Auth | Descripción |
-| --- | --- | --- | --- |
-| `/api/files` | POST | Sí | Sube archivo (multipart) |
-| `/api/files/content` | POST | Sí | Guarda contenido de texto |
-| `/api/files/:id` | GET | Sí | Descarga versión actual |
-| `/api/files/:id/versions` | GET | Sí | Lista versiones |
-| `/api/files/:id/versions/:vId` | GET | Sí | Descarga versión específica |
-| `/api/files/:id/move` | PUT | Sí | Mueve entre tipos de almacenamiento |
-| `/api/files/:id/copy` | POST | Sí | Copia archivo |
+| Endpoint                       | Método | Auth | Descripción                         |
+| ------------------------------ | ------ | ---- | ----------------------------------- |
+| `/api/files`                   | POST   | Sí   | Sube archivo (multipart)            |
+| `/api/files/content`           | POST   | Sí   | Guarda contenido de texto           |
+| `/api/files/:id`               | GET    | Sí   | Descarga versión actual             |
+| `/api/files/:id/versions`      | GET    | Sí   | Lista versiones                     |
+| `/api/files/:id/versions/:vId` | GET    | Sí   | Descarga versión específica         |
+| `/api/files/:id/move`          | PUT    | Sí   | Mueve entre tipos de almacenamiento |
+| `/api/files/:id/copy`          | POST   | Sí   | Copia archivo                       |
 
 **Flujo de subida con versionado:**
 
@@ -394,15 +394,15 @@ sequenceDiagram
 
 Control de **contenedores Docker y repositorios Git** (requiere acceso a `/var/run/docker.sock`).
 
-| Endpoint | Método | Auth | Descripción |
-| --- | --- | --- | --- |
-| `/api/manager/containers` | GET | Sí | Lista contenedores |
-| `/api/manager/containers/:id/start` | POST | Sí | Inicia contenedor |
-| `/api/manager/containers/:id/stop` | POST | Sí | Detiene contenedor |
-| `/api/manager/containers/:id/logs` | GET | Sí | Logs del contenedor |
-| `/api/manager/git/clone` | POST | Sí | Clona repositorio |
-| `/api/manager/git/status/:folder` | GET | Sí | Estado del repo |
-| `/api/manager/git/pull/:folder` | POST | Sí | Pull del repo |
+| Endpoint                            | Método | Auth | Descripción         |
+| ----------------------------------- | ------ | ---- | ------------------- |
+| `/api/manager/containers`           | GET    | Sí   | Lista contenedores  |
+| `/api/manager/containers/:id/start` | POST   | Sí   | Inicia contenedor   |
+| `/api/manager/containers/:id/stop`  | POST   | Sí   | Detiene contenedor  |
+| `/api/manager/containers/:id/logs`  | GET    | Sí   | Logs del contenedor |
+| `/api/manager/git/clone`            | POST   | Sí   | Clona repositorio   |
+| `/api/manager/git/status/:folder`   | GET    | Sí   | Estado del repo     |
+| `/api/manager/git/pull/:folder`     | POST   | Sí   | Pull del repo       |
 
 ---
 
@@ -412,12 +412,12 @@ Control de **contenedores Docker y repositorios Git** (requiere acceso a `/var/r
 
 Gestión de **pagos y suscripciones** (usa Sequelize/SQL internamente).
 
-| Endpoint | Método | Auth | Descripción |
-| --- | --- | --- | --- |
-| `/api/billing/payments/cliente/:id` | GET | Sí | Historial de pagos |
-| `/api/billing/payments` | POST | Sí | Registra pago |
-| `/api/billing/payments/estado/:id` | GET | Sí | Estado de cuenta |
-| `/api/billing/payments/suscripcion` | POST | Sí | Crea/actualiza suscripción |
+| Endpoint                            | Método | Auth | Descripción                |
+| ----------------------------------- | ------ | ---- | -------------------------- |
+| `/api/billing/payments/cliente/:id` | GET    | Sí   | Historial de pagos         |
+| `/api/billing/payments`             | POST   | Sí   | Registra pago              |
+| `/api/billing/payments/estado/:id`  | GET    | Sí   | Estado de cuenta           |
+| `/api/billing/payments/suscripcion` | POST   | Sí   | Crea/actualiza suscripción |
 
 ---
 
@@ -448,19 +448,19 @@ flowchart LR
         GW[api-gateway]
     end
 
-    Consume -->|require('@dev-laoz/core')| CORE
+    Consume -->|usa la libreria| CORE
     C -->|HTTPS| S[api-secrets :3501]
     L -->|HTTP async| INS[api-insights :3600]
     AM -->|HTTP| AZ2[authorization-api :5000]
 ```
 
-| Export | Descripción |
-| --- | --- |
-| `config` | `loadRemoteSecrets(appName, keys[])` — carga secretos desde Secrets API con fallback a env |
-| `logger` | `info/error/audit/transaction` — fire-and-forget a Insights API |
-| `authMiddleware` | Valida Bearer JWT delegando a Authorization API |
-| `rateLimitMiddleware` | Rate limiting (configurable con `RATE_LIMIT_MAX`) |
-| `createSwaggerDocs` | Setup de Swagger UI en `/api-docs` |
+| Export                | Descripción                                                                                |
+| --------------------- | ------------------------------------------------------------------------------------------ |
+| `config`              | `loadRemoteSecrets(appName, keys[])` — carga secretos desde Secrets API con fallback a env |
+| `logger`              | `info/error/audit/transaction` — fire-and-forget a Insights API                            |
+| `authMiddleware`      | Valida Bearer JWT delegando a Authorization API                                            |
+| `rateLimitMiddleware` | Rate limiting (configurable con `RATE_LIMIT_MAX`)                                          |
+| `createSwaggerDocs`   | Setup de Swagger UI en `/api-docs`                                                         |
 
 **Variables de entorno que consume:**
 
@@ -557,11 +557,11 @@ flowchart TD
 
 ## Puertos expuestos (producción)
 
-| Puerto | Servicio | Descripción |
-| --- | --- | --- |
-| **80** | portal | Frontend principal |
-| **9000** | api-gateway | API pública |
-| **9001** | auth-frontend | Frontend de autenticación |
+| Puerto   | Servicio       | Descripción                |
+| -------- | -------------- | -------------------------- |
+| **80**   | portal         | Frontend principal         |
+| **9000** | api-gateway    | API pública                |
+| **9001** | auth-frontend  | Frontend de autenticación  |
 | **7000** | docs-automator | Generador de documentación |
 
 Todos los demás servicios están en la red interna `laoz-net` y **no son accesibles** desde el exterior.
