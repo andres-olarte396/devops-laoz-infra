@@ -1,4 +1,4 @@
-# Dev Laoz — Arquitectura del Ecosistema
+# Arquitectura del Ecosistema
 
 ## Visión general
 
@@ -464,7 +464,7 @@ flowchart LR
 
 **Variables de entorno que consume:**
 
-```
+```text
 SECRETS_API_URL       = https://api-secrets:3501/api/secrets
 AUTHORIZATION_API_URL = http://authorization-api:5000/api/authorization/validate
 ROLES_API_URL         = http://api-roles:5002/api/roles/check
@@ -594,7 +594,7 @@ docker compose -f docker-compose.yml down
 
 ## Variables de entorno requeridas (`.env`)
 
-```
+```text
 JWT_SECRET          # Mínimo 32 chars, base64 recomendado
 ENCRYPTION_KEY      # Exactamente 32 chars, para AES-256-CBC en api-secrets
 MONGO_URI           # mongodb://mongo:27017/laoz
