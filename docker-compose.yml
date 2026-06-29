@@ -63,7 +63,7 @@ services:
   authentication-api:
     build:
       context: ..
-      dockerfile: dev-laoz-authentication-api/Dockerfile
+      dockerfile: dev-laoz-api-authentication/Dockerfile
     container_name: authentication-api
     networks: [laoz-net]
     env_file: .env
@@ -87,7 +87,7 @@ services:
   authorization-api:
     build:
       context: ..
-      dockerfile: dev-laoz-authorization-api/Dockerfile
+      dockerfile: dev-laoz-api-authorization/Dockerfile
     container_name: authorization-api
     networks: [laoz-net]
     env_file: .env
