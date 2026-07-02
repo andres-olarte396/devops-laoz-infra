@@ -228,6 +228,15 @@ services:
     ports:
       - "7000:7000"
 
+  waveartcss:
+    build:
+      context: ../..
+      dockerfile: infra/infra-laoz-federation/services/waveartcss/Dockerfile
+    container_name: waveartcss
+    networks: [laoz-net]
+    ports:
+      - "9105:80"
+
   # ── Gateway (único punto de entrada para las APIs) ────────────────────────
 
   api-gateway:
@@ -240,6 +249,7 @@ services:
     environment:
       - LOCAL_PORT=3002
       - SERVICE_NAME=api-gateway
+      - CORS_ORIGINS=http://localhost,http://localhost:80,http://localhost:8080,http://localhost:9001
     ports:
       - "9000:3002"
     depends_on:
@@ -262,16 +272,20 @@ services:
 
   auth-frontend:
     build:
-      context: ../dev-laoz-auth-frontend
+      context: ../../core/dev-laoz-auth-frontend
       args:
         - VITE_USER_API_URL=http://localhost:9000/api/user
         - VITE_AUTH_API_URL=http://localhost:9000/api/auth
+        - VITE_WAVEARTCSS_URL=http://localhost:9105
+        - VITE_WAVEARTCSS_PACK=waveartcss-l40z-auth.css
+        - VITE_WAVEARTCSS_BRAND=l40z
     container_name: auth-frontend
     networks: [laoz-net]
     ports:
       - "9001:80"
     depends_on:
       - api-gateway
+      - waveartcss
 
   portal:
     build:
@@ -279,6 +293,9 @@ services:
       args:
         - VITE_FILES_SERVICE_URL=http://localhost:9000/api/files
         - VITE_MARKDOWN_SERVICE_URL=http://localhost:7000
+        - VITE_WAVEARTCSS_URL=http://localhost:9105
+        - VITE_WAVEARTCSS_PACK=waveartcss-portal.css
+        - VITE_WAVEARTCSS_BRAND=l40z
     container_name: portal
     networks: [laoz-net]
     ports:
